@@ -122,14 +122,13 @@ export class ImportsUtil {
                 let variableDeclaration = sourceFileImport.getVariableDeclaration(variableName);
                 if (variableDeclaration) {
                     let variableKind = variableDeclaration.getKind();
-
                     if (variableKind && variableKind === ts.SyntaxKind.VariableDeclaration) {
                         let initializer = variableDeclaration.getInitializer();
                         if (initializer) {
                             let initializerKind = initializer.getKind();
                             if (initializerKind && initializerKind === ts.SyntaxKind.ObjectLiteralExpression) {
                                 let compilerNode = initializer.compilerNode as ts.ObjectLiteralExpression;
-                                return compilerNode.properties;
+                                return compilerNode;
                             }
                         }
                     }

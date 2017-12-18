@@ -11,6 +11,10 @@ import { FileEngine } from '../app/engines/file.engine';
 import { RoutingGraphNode } from '../app/nodes/routing-graph-node';
 import { ImportsUtil } from './imports.util';
 
+import Ast from 'ts-simple-ast';
+
+const ast = new Ast();
+
 export class RouterParserUtil {
     private routes: any[] = [];
     private incompleteRoutes = [];
@@ -370,40 +374,61 @@ export class RouterParserUtil {
      * It is an imperative approach, not a generic way, parsing all the tree
      * and find something like this which willl break JSON.stringify : MYIMPORT.path
      *
-     * @param  {ts.Node} initializer The node of routes definition
-     * @return {ts.Node}             The edited node
+     * @param  {ts.ArrayLiteralExpression} initializer The node of routes definition
+     * @param  {ts.Node} node                          The AST node parent of initializer
+     * @param  {ts.Sourcefile}                         The sourceFile
+     * @return {ts.Node}                               The edited node
      */
     public cleanRoutesDefinitionWithImport(initializer: ts.ArrayLiteralExpression, node: ts.Node, sourceFile: ts.SourceFile): ts.Node {
-        initializer.elements.forEach((element: ts.ObjectLiteralExpression) => {
-            element.properties.forEach((property: ts.PropertyAssignment) => {
-                let propertyName = property.name.getText(),
-                    propertyInitializer = property.initializer;
-                switch (propertyName) {
-                    case 'path':
-                    case 'redirectTo':
-                    case 'outlet':
-                    case 'pathMatch':
-                      if (propertyInitializer) {
-                          if (propertyInitializer.kind !== ts.SyntaxKind.StringLiteral) {
-                              // Identifier(71) won't break parsing, but it will be better to retrive them
-                              // PropertyAccessExpression(179) ex: MYIMPORT.path will break it, find it in import
-                              if (propertyInitializer.kind === ts.SyntaxKind.PropertyAccessExpression) {
-                                  let lastObjectLiteralAttributeName = propertyInitializer.name.getText(),
-                                      firstObjectLiteralAttributeName;
-                                  if (propertyInitializer.expression) {
-                                      firstObjectLiteralAttributeName = propertyInitializer.expression.getText();
-                                      let result = this.importsUtil.findPropertyValueInImportOrLocalVariables(firstObjectLiteralAttributeName + '.' + lastObjectLiteralAttributeName, sourceFile);
-                                      if (result !== '') {
-                                          propertyInitializer.kind = 9;
-                                          propertyInitializer.text = result;
-                                      }
-                                  }
-                              }
-                          }
-                      }
-                      break;
+        initializer.elements.forEach((element: ts.ObjectLiteralExpression, index: number, _elements) => {
+            if (ts.isObjectLiteralExpression(element)) {
+                element.properties.forEach((property: ts.PropertyAssignment) => {
+                    let propertyName = property.name.getText(),
+                        propertyInitializer = property.initializer;
+                    switch (propertyName) {
+                        case 'path':
+                        case 'redirectTo':
+                        case 'outlet':
+                        case 'pathMatch':
+                            if (propertyInitializer) {
+                                if (propertyInitializer.kind !== ts.SyntaxKind.StringLiteral) {
+                                  // Identifier(71) won't break parsing, but it will be better to retrive them
+                                  // PropertyAccessExpression(179) ex: MYIMPORT.path will break it, find it in import
+                                    if (propertyInitializer.kind === ts.SyntaxKind.PropertyAccessExpression) {
+                                        let lastObjectLiteralAttributeName = propertyInitializer.name.getText(),
+                                            firstObjectLiteralAttributeName;
+                                        if (propertyInitializer.expression) {
+                                                firstObjectLiteralAttributeName = propertyInitializer.expression.getText();
+                                                let result = this.importsUtil.findPropertyValueInImportOrLocalVariables(firstObjectLiteralAttributeName + '.' + lastObjectLiteralAttributeName, sourceFile);// tslint:disable-line
+                                                if (result !== '') {
+                                                    propertyInitializer.kind = 9;
+                                                    propertyInitializer.text = result;
+                                                }
+                                        }
+                                    }
+                                }
+                            }
+                        break;
+                    }
+                });
+            }
+            if (ts.isIdentifier(element)) {
+                console.log(element.escapedText);
+                let result = this.importsUtil.findValueInImportOrLocalVariables(element.escapedText as string, sourceFile);// tslint:disable-line
+                console.log('result: ', index, result);
+
+                let currentFile = (typeof ast.getSourceFile(sourceFile.fileName) !== 'undefined') ? ast.getSourceFile(sourceFile.fileName) : ast.addSourceFileFromText(sourceFile.fileName, sourceFile.getText());// tslint:disable-line
+
+                console.log('currentFile: ', currentFile);
+
+                console.log(currentFile.getVariableStatements());
+
+                process.exit(1);
+
+                if (result) {
+                    initializer.elements[index] = result;
                 }
-            });
+            }
         });
         return initializer;
     }

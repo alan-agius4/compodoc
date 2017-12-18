@@ -1,5 +1,6 @@
 import * as path from 'path';
 import * as util from 'util';
+import * as fs from 'fs-extra';
 
 import * as _ from 'lodash';
 import * as ts from 'typescript';
@@ -446,7 +447,7 @@ export class Dependencies {
                         }
                     }
                 } else {
-                    let IO = this.getRouteIO(file, srcFile);
+                    let IO = this.getRouteIO(file, srcFile, node);
                     if (IO.routes) {
                         let newRoutes;
                         try {
@@ -911,16 +912,20 @@ export class Dependencies {
         return [];
     }
 
-    private getRouteIO(filename, sourceFile) {
-        /**
-         * Copyright https://github.com/ng-bootstrap/ng-bootstrap
-         */
+    /**
+     * Visit sourceFile for Routes definitions
+     * @param {string} filename filename
+     * @param {ts.sourceFile} sourceFile file AST
+     */
+    private getRouteIO(filename: string, sourceFile: ts.SourceFile, node: ts.Node) {
         let res;
         if (sourceFile.statements) {
             res = sourceFile.statements.reduce((directive, statement) => {
 
                 if (ts.isVariableStatement(statement)) {
-                    return directive.concat(this.visitEnumDeclarationForRoutes(filename, statement, sourceFile));
+                    if (statement.pos === node.pos && statement.end === node.end) {
+                        return directive.concat(this.visitEnumDeclarationForRoutes(filename, statement, sourceFile));
+                    }
                 }
 
                 return directive;
