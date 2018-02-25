@@ -1,10 +1,8 @@
 import * as path from 'path';
 import * as util from 'util';
-
 import * as _ from 'lodash';
 import * as ts from 'typescript';
-import Ast from 'ts-simple-ast';
-import { TypeGuards } from 'ts-simple-ast';
+import Ast, { TypeGuards } from 'ts-simple-ast';
 
 import { compilerHost, detectIndent } from '../../utilities';
 import { logger } from '../../logger';
@@ -246,8 +244,8 @@ export class Dependencies {
         // Search in file for variable statement as routes definitions
 
         const astFile = (typeof ast.getSourceFile(initialSrcFile.fileName) !== 'undefined') ?
-                        ast.getSourceFile(initialSrcFile.fileName) :
-                        ast.addExistingSourceFile(initialSrcFile.fileName);
+            ast.getSourceFile(initialSrcFile.fileName) :
+            ast.addExistingSourceFile(initialSrcFile.fileName);
 
         const variableRoutesStatements = astFile.getVariableStatements();
         let hasRoutesStatements = false;

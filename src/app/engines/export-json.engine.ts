@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as traverse from 'traverse';
 
 import { logger } from '../../logger';
 import { DependenciesEngine } from './dependencies.engine';
@@ -8,8 +9,6 @@ import { FileEngine } from './file.engine';
 import { ExportData } from '../interfaces/export-data.interface';
 
 import { AngularNgModuleNode } from '../nodes/angular-ngmodule-node';
-
-const traverse = require('traverse');
 
 export class ExportJsonEngine {
     constructor(

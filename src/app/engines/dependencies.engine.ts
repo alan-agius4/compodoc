@@ -1,8 +1,8 @@
+import * as _ from 'lodash';
 import { ParsedData } from '../interfaces/parsed-data.interface';
 import { MiscellaneousData } from '../interfaces/miscellaneous-data.interface';
 
 import { getNamesCompareFn } from '../../utils/utils';
-import * as _ from 'lodash';
 import { IModuleDep } from '../compiler/deps/module-dep.factory';
 import { IComponentDep } from '../compiler/deps/component-dep.factory';
 import { IDirectiveDep } from '../compiler/deps/directive-dep.factory';
@@ -19,7 +19,7 @@ import {
     IInterceptorDep
 } from '../compiler/dependencies.interfaces';
 
-const traverse = require('traverse');
+import * as traverse from 'traverse';
 
 export class DependenciesEngine {
     public rawData: ParsedData;
@@ -86,7 +86,7 @@ export class DependenciesEngine {
             if (typeof pipe.data !== 'undefined') {
                 entry.type = 'pipe';
             }
-        }
+        };
 
         this.modules.forEach((module) => {
             module.declarations.forEach((declaration) => {
@@ -257,15 +257,15 @@ export class DependenciesEngine {
     }
 
     public findInCompodoc(name: string) {
-        let mergedData = _.concat([], 
-            this.modules, 
-            this.components, 
+        let mergedData = _.concat([],
+            this.modules,
+            this.components,
             this.directives,
-            this.injectables, 
-            this.interceptors, 
-            this.interfaces, 
-            this.pipes, 
-            this.classes, 
+            this.injectables,
+            this.interceptors,
+            this.interfaces,
+            this.pipes,
+            this.classes,
             this.miscellaneous.enumerations,
             this.miscellaneous.typealiases,
             this.miscellaneous.variables,

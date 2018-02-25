@@ -4,14 +4,12 @@ import * as ts from 'typescript';
 import * as Handlebars from 'handlebars';
 import * as _ from 'lodash';
 import * as JSON5 from 'json5';
+import * as traverse from 'traverse';
+import Ast, { PropertyDeclaration, TypeGuards, SourceFile } from 'ts-simple-ast';
 
 import { FileEngine } from '../app/engines/file.engine';
 import { RoutingGraphNode } from '../app/nodes/routing-graph-node';
 import { ImportsUtil } from './imports.util';
-
-const traverse = require('traverse');
-
-import Ast, { PropertyDeclaration, TypeGuards, SourceFile } from 'ts-simple-ast';
 
 const ast = new Ast();
 
